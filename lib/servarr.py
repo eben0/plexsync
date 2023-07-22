@@ -48,7 +48,7 @@ def get_arr_imdb_ids(arr_type: int) -> list:
     res: str = request.get(
         url=config["list_url"], params={"apiKey": config["token"]}
     )
-    j_res: dict = json.loads(res)
+    j_res: list = json.loads(res)
     return list(map(lambda x: str(x.get("imdbId")), j_res))
 
 

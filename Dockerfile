@@ -9,6 +9,7 @@ RUN apk add build-base python3-dev && \
 
 FROM python:3.11-alpine3.18
 WORKDIR /app
-COPY --from=builder /src/compiled/lib/ /app/lib
+ENV PYTHONPATH=/app
+COPY --from=builder /src/compiled/lib/* /app/lib/
 COPY --from=builder /src/compiled/plexsync /app/plexsync
-CMD /app/plexsync
+CMD ["/app/plexsync"]
