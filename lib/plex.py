@@ -5,9 +5,7 @@ import xml.etree.ElementTree as ET
 
 PLEX_TOKEN: str = environ.get("PLEX_TOKEN")
 PLEX_DISCOVER_URL: str = "https://discover.provider.plex.tv"
-PLEX_WL_URL: str = (
-    f"{PLEX_DISCOVER_URL}/library/sections/watchlist/all".__str__()
-)
+PLEX_WL_URL: str = f"{PLEX_DISCOVER_URL}/library/sections/watchlist/all".__str__()
 PLEX_MD_URL: str = f"{PLEX_DISCOVER_URL}/library/metadata".__str__()
 ID_PFX: str = "imdb://"
 
@@ -30,6 +28,9 @@ def get_plex_wl() -> dict:
     }
 
     res: str = request.get(url=PLEX_WL_URL, params=params)
+    if not res:
+        logger.warning(f"{PLEX_WL_URL} response is empty")
+        return collection
     root: ET.XML = ET.fromstring(res)
     for child in root.findall(".//*[@title]"):
         title: str = child.attrib.get("title").strip()
@@ -37,10 +38,11 @@ def get_plex_wl() -> dict:
 
         metadata_url: str = str(f"{PLEX_MD_URL}/{rating_key}")
         metadata_res: str = request.get(url=metadata_url, params=params)
+        if not metadata_res:
+            logger.warning(f"{metadata_url} response is empty")
+            continue
         metadata_root: ET.XML = ET.fromstring(metadata_res)
-        guids: list[ET.Element] = metadata_root.find(".//*").findall(
-            ".//Guid[@id]"
-        )
+        guids: list[ET.Element] = metadata_root.find(".//*").findall(".//Guid[@id]")
 
         for guid in guids:
             guid_id: str = guid.get("id").strip()
