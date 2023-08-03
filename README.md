@@ -8,9 +8,9 @@ Syncs Plex watchlist with Radarr/Sonarr
 |---------------|----------------|----------|
 | PLEX_TOKEN    | -              | *        |
 | RADARR_TOKEN  | -              | *        |
-| RADARR_HOST   | localhost:7878 |          |
+| RADARR_URL    | localhost:7878 |          |
 | SONARR_TOKEN  | -              | *        |
-| SONARR_HOST   | localhost:8989 |          |
+| SONARR_URL    | localhost:8989 |          |
 | TIME_INTERVAL | 60             |          |
 
 ## Run
