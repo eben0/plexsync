@@ -10,3 +10,10 @@ services:
       SONARR_TOKEN: xxxxxxxxx
       SONARR_URL: http://sonarr:8989
     restart: unless-stopped
+
+  # for local debugging
+  plexsync-local:
+    image: ${IMAGE}
+    env_file:
+      - .env
+    restart: unless-stopped

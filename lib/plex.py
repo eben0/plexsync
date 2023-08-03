@@ -1,13 +1,8 @@
 from logging import Logger, getLogger
-from os import environ
 import lib.request as request
 import xml.etree.ElementTree as ET
 
-PLEX_TOKEN: str = environ.get("PLEX_TOKEN")
-PLEX_DISCOVER_URL: str = "https://discover.provider.plex.tv"
-PLEX_WL_URL: str = f"{PLEX_DISCOVER_URL}/library/sections/watchlist/all".__str__()
-PLEX_MD_URL: str = f"{PLEX_DISCOVER_URL}/library/metadata".__str__()
-ID_PFX: str = "imdb://"
+from lib.constants import Plex
 
 logger: Logger = getLogger(__name__)
 
@@ -24,19 +19,19 @@ def get_plex_wl() -> dict:
         "includeElements": "Guid",
         "sort": "watchlistedAt:desc",
         # "type": TYPE,
-        "X-Plex-Token": PLEX_TOKEN,
+        "X-Plex-Token": Plex.TOKEN,
     }
 
-    res: str = request.get(url=PLEX_WL_URL, params=params)
+    res: str = request.get(url=Plex.WL_URL, params=params)
     if not res:
-        logger.warning(f"{PLEX_WL_URL} response is empty")
+        logger.warning(f"{Plex.WL_URL} response is empty")
         return collection
     root: ET.XML = ET.fromstring(res)
     for child in root.findall(".//*[@title]"):
         title: str = child.attrib.get("title").strip()
         rating_key: str = child.attrib.get("ratingKey").strip()
 
-        metadata_url: str = str(f"{PLEX_MD_URL}/{rating_key}")
+        metadata_url: str = str(f"{Plex.MD_URL}/{rating_key}")
         metadata_res: str = request.get(url=metadata_url, params=params)
         if not metadata_res:
             logger.warning(f"{metadata_url} response is empty")
@@ -46,8 +41,8 @@ def get_plex_wl() -> dict:
 
         for guid in guids:
             guid_id: str = guid.get("id").strip()
-            if guid_id.startswith(ID_PFX):
-                imdb_id: str = guid_id.replace(ID_PFX, "")
+            if guid_id.startswith(Plex.ID_PFX):
+                imdb_id: str = guid_id.replace(Plex.ID_PFX, "")
                 collection[child.attrib.get("type")][imdb_id] = title
                 break
 

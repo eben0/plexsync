@@ -31,9 +31,9 @@ services:
       environment:
           PLEX_TOKEN: xxxxxxxxx
           RADARR_TOKEN: xxxxxxxxx
-          RADARR_HOST: radarr:7878
+          RADARR_URL: http://radarr:7878
           SONARR_TOKEN: xxxxxxxxx
-          SONARR_HOST: sonarr:8989
+          SONARR_URL: http://sonarr:8989
       restart: unless-stopped
 
 ```

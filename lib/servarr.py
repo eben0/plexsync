@@ -1,51 +1,41 @@
 import json
 from logging import Logger, getLogger
-from os import environ
 
 import lib.request as request
+from lib.constants import Servarr, Radarr, Sonarr
+from lib.tools import synchronized
 
-BASE_PATH: str = "/api/v3"
-CMD_PATH: str = "/command"
-
-TYPE_RADARR: int = 1
-TYPE_SONARR: int = 2
-
-RADARR_TOKEN: str = environ.get("RADARR_TOKEN")
-RADARR_URL: str = environ.get("RADARR_URL", "http://localhost:7878")
-RADARR_LIST_PATH: str = "/movie"
-
-SONARR_TOKEN: str = environ.get("SONARR_TOKEN")
-SONARR_URL: str = environ.get("SONARR_URL", "http://localhost:8989")
-SONARR_LIST_PATH: str = "/series"
 
 LABEL_MAP: dict[int, str] = {
-    TYPE_RADARR: "Radarr",
-    TYPE_SONARR: "Sonarr",
+    Radarr.TYPE: "Radarr",
+    Sonarr.TYPE: "Sonarr",
 }
 
 logger: Logger = getLogger(__name__)
 
 
 def get_config(arr_type: int) -> dict:
-    if arr_type == TYPE_RADARR:
-        base_url: str = f"{RADARR_URL}{BASE_PATH}".__str__()
+    if arr_type == Radarr.TYPE:
+        base_url: str = f"{Radarr.URL}{Servarr.BASE_PATH}".__str__()
         return {
-            "token": RADARR_TOKEN,
-            "list_url": f"{base_url}{RADARR_LIST_PATH}",
-            "cmd_url": f"{base_url}{CMD_PATH}",
+            "token": Radarr.TOKEN,
+            "list_url": f"{base_url}{Radarr.LIST_PATH}",
+            "cmd_url": f"{base_url}{Servarr.CMD_PATH}",
         }
     else:
-        base_url: str = f"{SONARR_URL}{BASE_PATH}".__str__()
+        base_url: str = f"{Sonarr.URL}{Servarr.BASE_PATH}".__str__()
         return {
-            "token": SONARR_TOKEN,
-            "list_url": f"{base_url}{SONARR_LIST_PATH}",
-            "cmd_url": f"{base_url}{CMD_PATH}",
+            "token": Sonarr.TOKEN,
+            "list_url": f"{base_url}{Sonarr.LIST_PATH}",
+            "cmd_url": f"{base_url}{Servarr.CMD_PATH}",
         }
 
 
 def get_arr_imdb_ids(arr_type: int) -> list:
     config: dict = get_config(arr_type)
-    res: str = request.get(url=config["list_url"], params={"apiKey": config["token"]})
+    res: str = request.get(
+        url=config["list_url"], params={"apiKey": config["token"]}
+    )
     if not res:
         logger.warning("%s response is empty", config["list_url"])
         return []
@@ -71,11 +61,13 @@ def arr_sync(arr_type: int) -> dict:
 def check_new(arr_type: int, plex_imdb_ids: dict) -> bool:
     imdb_id: str
     title: str
-    plex_type: str = "movie" if arr_type == TYPE_RADARR else "show"
+    plex_type: str = "movie" if arr_type == Radarr.TYPE else "show"
     arr_label: str = LABEL_MAP[arr_type]
     logger.info(f"Checking for new {plex_type}s")
     arr_imdb_ids: list = get_arr_imdb_ids(arr_type)
-    logger.debug("Plex %ss watchlist: %s", plex_type, plex_imdb_ids.get(plex_type))
+    logger.debug(
+        "Plex %ss watchlist: %s", plex_type, plex_imdb_ids.get(plex_type)
+    )
     for imdb_id, title in plex_imdb_ids[plex_type].items():
         if imdb_id not in arr_imdb_ids:
             logger.info(f"New {plex_type} found in Plex watchlist: {title}")
@@ -87,26 +79,28 @@ def check_new(arr_type: int, plex_imdb_ids: dict) -> bool:
     return False
 
 
+@synchronized
 def radarr_check_new(plex_imdb_ids: dict) -> bool:
-    return check_new(TYPE_RADARR, plex_imdb_ids)
+    return check_new(Radarr.TYPE, plex_imdb_ids)
 
 
+@synchronized
 def sonarr_check_new(plex_imdb_ids: dict) -> bool:
-    return check_new(TYPE_SONARR, plex_imdb_ids)
+    return check_new(Sonarr.TYPE, plex_imdb_ids)
 
 
 # shortcuts
 def get_raddar_imdb_ids() -> list:
-    return get_arr_imdb_ids(TYPE_RADARR)
+    return get_arr_imdb_ids(Radarr.TYPE)
 
 
 def get_sonarr_imdb_ids() -> list:
-    return get_arr_imdb_ids(TYPE_SONARR)
+    return get_arr_imdb_ids(Sonarr.TYPE)
 
 
 def sync_raddar() -> dict:
-    return arr_sync(TYPE_RADARR)
+    return arr_sync(Radarr.TYPE)
 
 
 def sync_sonarr() -> dict:
-    return arr_sync(TYPE_SONARR)
+    return arr_sync(Sonarr.TYPE)
