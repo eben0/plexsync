@@ -2,7 +2,7 @@ from logging import Logger, getLogger
 import lib.request as request
 import xml.etree.ElementTree as ET
 
-from lib.constants import Plex
+from lib.constants import Plex, ID_TYPE
 
 logger: Logger = getLogger(__name__)
 
@@ -38,12 +38,13 @@ def get_plex_wl() -> dict:
             continue
         metadata_root: ET.XML = ET.fromstring(metadata_res)
         guids: list[ET.Element] = metadata_root.find(".//*").findall(".//Guid[@id]")
+        id_prefix = f"{ID_TYPE}://"
 
         for guid in guids:
             guid_id: str = guid.get("id").strip()
-            if guid_id.startswith(Plex.ID_PFX):
-                imdb_id: str = guid_id.replace(Plex.ID_PFX, "")
-                collection[child.attrib.get("type")][imdb_id] = title
+            if guid_id.startswith(id_prefix):
+                media_id: str = guid_id.replace(id_prefix, "")
+                collection[child.attrib.get("type")][media_id] = title
                 break
 
     return collection

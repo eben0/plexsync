@@ -1,7 +1,7 @@
 from lib.executor import Executor
 from lib.logger import setup_logger
 
-# log format
+# logger settings
 setup_logger()
 
 # start

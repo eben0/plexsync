@@ -1,7 +1,9 @@
 from os import environ
+from typing import Union
 
-__DEFAULT_INTERVAL__: float = 60.0
-TIME_INTERVAL: float = float(environ.get("TIME_INTERVAL", __DEFAULT_INTERVAL__))
+DEFAULT_INTERVAL: float = 60.0
+TIME_INTERVAL: Union[str, float] = environ.get("TIME_INTERVAL", DEFAULT_INTERVAL)
+ID_TYPE: str = "imdb"
 
 
 class Plex:
@@ -9,7 +11,6 @@ class Plex:
     DISCOVER_URL: str = "https://discover.provider.plex.tv"
     WL_URL: str = f"{DISCOVER_URL}/library/sections/watchlist/all".__str__()
     MD_URL: str = f"{DISCOVER_URL}/library/metadata".__str__()
-    ID_PFX: str = "imdb://"
 
 
 class Servarr:
